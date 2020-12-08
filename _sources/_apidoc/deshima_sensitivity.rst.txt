@@ -1,0 +1,23 @@
+deshima\_sensitivity package
+============================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   deshima_sensitivity.atmosphere
+   deshima_sensitivity.galaxy
+   deshima_sensitivity.instruments
+   deshima_sensitivity.physics
+   deshima_sensitivity.plotting
+   deshima_sensitivity.simulator
+
+Module contents
+---------------
+
+.. automodule:: deshima_sensitivity
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+deshima\_sensitivity.simulator module
+=====================================
+
+.. automodule:: deshima_sensitivity.simulator
+   :members:
+   :undoc-members:
+   :show-inheritance:

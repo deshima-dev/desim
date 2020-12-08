@@ -1,0 +1,293 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>deshima_sensitivity.atmosphere &#8212; deshima-sensitivity 0.2.6 documentation</title>
+    
+  <link rel="stylesheet" href="../../_static/css/index.d431a4ee1c1efae0e38bdfebc22debff.css">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+  <link rel="stylesheet"
+    href="../../_static/vendor/open-sans_all/1.44.1/index.css">
+  <link rel="stylesheet"
+    href="../../_static/vendor/lato_latin-ext/1.44.1/index.css">
+
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.30270b6e4c972e43c488.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main">
+<div class="container-xl">
+
+    
+    <a class="navbar-brand" href="../../index.html">
+      <img src="../../_static/logo.png" class="logo" alt="logo">
+    </a>
+    
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="navbar-menu" class="col-lg-9 collapse navbar-collapse">
+      <ul id="navbar-main-elements" class="navbar-nav mr-auto">
+        
+        
+        <li class="nav-item ">
+            <a class="nav-link" href="../../index.html">Home</a>
+        </li>
+        
+        <li class="nav-item ">
+            <a class="nav-link" href="../../_apidoc/deshima_sensitivity.html">Package guide</a>
+        </li>
+        
+        
+      </ul>
+
+
+      
+
+      <ul class="navbar-nav">
+        
+          <li class="nav-item">
+            <a class="nav-link" href="https://github.com/deshima-dev/deshima-sensitivity/" target="_blank" rel="noopener">
+              <span><i class="fab fa-github-square"></i></span>
+            </a>
+          </li>
+        
+        
+      </ul>
+    </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+          <div class="col-12 col-md-3 bd-sidebar">
+
+<form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+
+
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+
+  <div class="bd-toc-item active">
+  
+
+  <ul class="nav bd-sidenav">
+      
+      
+      
+      
+      
+    </ul>
+
+</nav>
+          </div>
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+              
+
+<nav id="bd-toc-nav">
+    <ul class="nav section-nav flex-column">
+    
+    </ul>
+</nav>
+
+
+              
+          </div>
+          
+
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for deshima_sensitivity.atmosphere</h1><div class="highlight"><pre>
+<span></span><span class="c1"># standard library</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+
+
+<span class="c1"># dependent packages</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp2d</span>
+
+
+<span class="c1"># type aliases</span>
+<span class="n">ArrayLike</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+
+
+<span class="c1"># main functions</span>
+<div class="viewcode-block" id="eta_atm_func"><a class="viewcode-back" href="../../_apidoc/deshima_sensitivity.atmosphere.html#deshima_sensitivity.atmosphere.eta_atm_func">[docs]</a><span class="k">def</span> <span class="nf">eta_atm_func</span><span class="p">(</span>
+    <span class="n">F</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">pwv</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">EL</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span> <span class="n">R</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Calculate eta_atm as a function of F by interpolation.</span>
+
+<span class="sd">    If R~=0 then the function will average the atmospheric transmission</span>
+<span class="sd">    within each spectrometer channel.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    F</span>
+<span class="sd">        Frequency of the astronomical signal.</span>
+<span class="sd">        Units: Hz (works also for GHz, will detect).</span>
+<span class="sd">    pwv</span>
+<span class="sd">        Precipitable water vapour. Units: mm.</span>
+<span class="sd">    EL</span>
+<span class="sd">        Telescope elevation angle. Units: degrees.</span>
+<span class="sd">    R</span>
+<span class="sd">        Spectral resolving power in F/W_F where W_F is the &#39;equivalent bandwidth&#39;.</span>
+<span class="sd">        R is used to average the atmospheric transmission within one spectrometer</span>
+<span class="sd">        channel. If R = 0, then the function will return the transmission</span>
+<span class="sd">        at that exact frequency. Units: None.</span>
+<span class="sd">        See also: http://www.astrosurf.com/buil/us/spe2/hresol7.htm</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    eta_atm</span>
+<span class="sd">        Atmospheric tranmsmission. Units: None.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">F</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="mi">9</span><span class="p">:</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="n">F</span> <span class="o">/</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="mi">9</span>
+
+    <span class="c1"># give F a length if it is an integer.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">):</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">F</span><span class="p">])</span>
+
+    <span class="n">eta_atm_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+        <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">&quot;data&quot;</span> <span class="o">/</span> <span class="s2">&quot;atm.csv&quot;</span><span class="p">,</span>
+        <span class="n">skiprows</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">delim_whitespace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">header</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">eta_atm_func_zenith</span> <span class="o">=</span> <span class="n">eta_atm_interp</span><span class="p">(</span><span class="n">eta_atm_df</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">R</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">eta_atm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eta_atm_func_zenith</span><span class="p">(</span><span class="n">pwv</span><span class="p">,</span> <span class="n">F</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span>
+            <span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">EL</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># smooth with spectrometer resolution</span>
+        <span class="c1"># 100.0, 100.1., ....., 1000 GHz as in the original data.</span>
+        <span class="n">F_highres</span> <span class="o">=</span> <span class="n">eta_atm_df</span><span class="p">[</span><span class="s2">&quot;F&quot;</span><span class="p">]</span>
+        <span class="n">eta_atm_zenith_highres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eta_atm_func_zenith</span><span class="p">(</span><span class="n">pwv</span><span class="p">,</span> <span class="n">F_highres</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span>
+            <span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">EL</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">eta_atm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">F</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i_ch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">F</span><span class="p">)):</span>
+            <span class="n">eta_atm</span><span class="p">[</span><span class="n">i_ch</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span>
+                <span class="n">eta_atm_zenith_highres</span><span class="p">[</span>
+                    <span class="p">(</span><span class="n">F_highres</span> <span class="o">&gt;</span> <span class="n">F</span><span class="p">[</span><span class="n">i_ch</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="n">R</span><span class="p">))</span>
+                    <span class="o">&amp;</span> <span class="p">(</span><span class="n">F_highres</span> <span class="o">&lt;</span> <span class="n">F</span><span class="p">[</span><span class="n">i_ch</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="n">R</span><span class="p">))</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+        <span class="n">eta_atm</span> <span class="o">=</span> <span class="p">[</span><span class="n">eta_atm</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">eta_atm</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">eta_atm</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">eta_atm</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span></div>
+
+
+<span class="c1"># helper functions</span>
+<div class="viewcode-block" id="eta_atm_interp"><a class="viewcode-back" href="../../_apidoc/deshima_sensitivity.atmosphere.html#deshima_sensitivity.atmosphere.eta_atm_interp">[docs]</a><span class="k">def</span> <span class="nf">eta_atm_interp</span><span class="p">(</span><span class="n">eta_atm_dataframe</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Used in the function eta_atm_func().</span>
+
+<span class="sd">    Returns a function that interpolates atmospheric transmission data</span>
+<span class="sd">    downloaded from ALMA (https://almascience.eso.org/about-alma/atmosphere-model).</span>
+
+<span class="sd">    The returned function has the form of eta = func(F [GHz], pwv [mm]).</span>
+<span class="sd">    Note telescope EL = 90 (zenith).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    eta_atm_dataframe</span>
+<span class="sd">        Pandas DataFrame of atmospheric transmission data.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    func</span>
+<span class="sd">        Function that returns the atmospheric transmission.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    --------</span>
+<span class="sd">        Read csv file with pandas (in e.g., Jupyter)::</span>
+
+<span class="sd">            eta_atm_df = pd.read_csv(&quot;&lt;desim-folder&gt;/data/atm.csv&quot;,skiprows=4,</span>
+<span class="sd">                                     delim_whitespace=True,header=0)</span>
+
+<span class="sd">        Make function from pandas file::</span>
+
+<span class="sd">            etafun = desim.eta_atm_interp(eta_atm_df)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">eta_atm_dataframe</span><span class="p">)[</span><span class="mi">1</span><span class="p">:])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">eta_atm_dataframe</span><span class="p">[</span><span class="s2">&quot;F&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">eta_atm_dataframe</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">values</span>
+    <span class="k">return</span> <span class="n">interp2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;cubic&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+
+    
+  <script src="../../_static/js/index.30270b6e4c972e43c488.js"></script>
+
+
+    <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    <p>
+          &copy; Copyright 2018-2020 DESHIMA software team.<br/>
+        Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+deshima\_sensitivity.plotting module
+====================================
+
+.. automodule:: deshima_sensitivity.plotting
+   :members:
+   :undoc-members:
+   :show-inheritance:

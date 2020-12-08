@@ -1,0 +1,7 @@
+deshima\_sensitivity.galaxy module
+==================================
+
+.. automodule:: deshima_sensitivity.galaxy
+   :members:
+   :undoc-members:
+   :show-inheritance:

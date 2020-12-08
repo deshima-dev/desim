@@ -1,0 +1,7 @@
+deshima\_sensitivity.instruments module
+=======================================
+
+.. automodule:: deshima_sensitivity.instruments
+   :members:
+   :undoc-members:
+   :show-inheritance:

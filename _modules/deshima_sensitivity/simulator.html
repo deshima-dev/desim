@@ -1,0 +1,658 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>deshima_sensitivity.simulator &#8212; deshima-sensitivity 0.2.6 documentation</title>
+    
+  <link rel="stylesheet" href="../../_static/css/index.d431a4ee1c1efae0e38bdfebc22debff.css">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+  <link rel="stylesheet"
+    href="../../_static/vendor/open-sans_all/1.44.1/index.css">
+  <link rel="stylesheet"
+    href="../../_static/vendor/lato_latin-ext/1.44.1/index.css">
+
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.30270b6e4c972e43c488.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main">
+<div class="container-xl">
+
+    
+    <a class="navbar-brand" href="../../index.html">
+      <img src="../../_static/logo.png" class="logo" alt="logo">
+    </a>
+    
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="navbar-menu" class="col-lg-9 collapse navbar-collapse">
+      <ul id="navbar-main-elements" class="navbar-nav mr-auto">
+        
+        
+        <li class="nav-item ">
+            <a class="nav-link" href="../../index.html">Home</a>
+        </li>
+        
+        <li class="nav-item ">
+            <a class="nav-link" href="../../_apidoc/deshima_sensitivity.html">Package guide</a>
+        </li>
+        
+        
+      </ul>
+
+
+      
+
+      <ul class="navbar-nav">
+        
+          <li class="nav-item">
+            <a class="nav-link" href="https://github.com/deshima-dev/deshima-sensitivity/" target="_blank" rel="noopener">
+              <span><i class="fab fa-github-square"></i></span>
+            </a>
+          </li>
+        
+        
+      </ul>
+    </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+          <div class="col-12 col-md-3 bd-sidebar">
+
+<form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+
+
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+
+  <div class="bd-toc-item active">
+  
+
+  <ul class="nav bd-sidenav">
+      
+      
+      
+      
+      
+    </ul>
+
+</nav>
+          </div>
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+              
+
+<nav id="bd-toc-nav">
+    <ul class="nav section-nav flex-column">
+    
+    </ul>
+</nav>
+
+
+              
+          </div>
+          
+
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for deshima_sensitivity.simulator</h1><div class="highlight"><pre>
+<span></span><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;spectrometer_sensitivity&quot;</span><span class="p">]</span>
+
+
+<span class="c1"># standard library</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+
+
+<span class="c1"># dependent packages</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">.atmosphere</span> <span class="kn">import</span> <span class="n">eta_atm_func</span>
+<span class="kn">from</span> <span class="nn">.instruments</span> <span class="kn">import</span> <span class="n">eta_Al_ohmic_850</span><span class="p">,</span> <span class="n">photon_NEP_kid</span><span class="p">,</span> <span class="n">window_trans</span>
+<span class="kn">from</span> <span class="nn">.physics</span> <span class="kn">import</span> <span class="n">johnson_nyquist_psd</span><span class="p">,</span> <span class="n">rad_trans</span><span class="p">,</span> <span class="n">T_from_psd</span>
+<span class="kn">from</span> <span class="nn">.physics</span> <span class="kn">import</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">k</span>
+
+
+<span class="c1"># type aliases</span>
+<span class="n">ArrayLike</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+
+
+<span class="c1"># main functions</span>
+<div class="viewcode-block" id="spectrometer_sensitivity"><a class="viewcode-back" href="../../_apidoc/deshima_sensitivity.simulator.html#deshima_sensitivity.simulator.spectrometer_sensitivity">[docs]</a><span class="k">def</span> <span class="nf">spectrometer_sensitivity</span><span class="p">(</span>
+    <span class="n">F</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">350.0e9</span><span class="p">,</span>
+    <span class="n">pwv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">EL</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
+    <span class="n">R</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">500.0</span><span class="p">,</span>
+    <span class="n">eta_M1_spill</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">0.99</span><span class="p">,</span>
+    <span class="n">eta_M2_spill</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">0.90</span><span class="p">,</span>
+    <span class="n">eta_wo_spill</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">0.99</span><span class="p">,</span>
+    <span class="n">n_wo_mirrors</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">4.0</span><span class="p">,</span>
+    <span class="n">window_AR</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">eta_co</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">0.65</span><span class="p">,</span>
+    <span class="n">eta_lens_antenna_rad</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">0.81</span><span class="p">,</span>
+    <span class="n">eta_circuit</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">0.32</span><span class="p">,</span>
+    <span class="n">eta_IBF</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">KID_excess_noise_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.1</span><span class="p">,</span>
+    <span class="n">theta_maj</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">22.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span> <span class="o">/</span> <span class="mf">60.0</span> <span class="o">/</span> <span class="mf">60.0</span><span class="p">,</span>
+    <span class="n">theta_min</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">22.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">180.0</span> <span class="o">/</span> <span class="mf">60.0</span> <span class="o">/</span> <span class="mf">60.0</span><span class="p">,</span>
+    <span class="n">eta_mb</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">,</span>
+    <span class="n">telescope_diameter</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="n">Tb_cmb</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">2.725</span><span class="p">,</span>
+    <span class="n">Tp_amb</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">273.0</span><span class="p">,</span>
+    <span class="n">Tp_cabin</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">290.0</span><span class="p">,</span>
+    <span class="n">Tp_co</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">4.0</span><span class="p">,</span>
+    <span class="n">Tp_chip</span><span class="p">:</span> <span class="n">ArrayLike</span> <span class="o">=</span> <span class="mf">0.12</span><span class="p">,</span>
+    <span class="n">snr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">obs_hours</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="n">on_source_fraction</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="mf">0.9</span><span class="p">,</span>
+    <span class="n">on_off</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate the sensitivity of a spectrometer.</span>
+
+<span class="sd">    Parameters which are functions of frequency can be a vector (see Parameters).</span>
+<span class="sd">    Output is a pandas DataFrame which containts results of simulation (see Returns).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    F</span>
+<span class="sd">        Frequency of the astronomical signal. Units: Hz.</span>
+<span class="sd">    pwv</span>
+<span class="sd">        Precipitable water vapour. Units: mm.</span>
+<span class="sd">    EL</span>
+<span class="sd">        Telescope elevation angle. Units: degrees.</span>
+<span class="sd">    R</span>
+<span class="sd">        Spectral resolving power in F/W_F where W_F is equivalent bandwidth.</span>
+<span class="sd">        Units: None. See also: http://www.astrosurf.com/buil/us/spe2/hresol7.htm</span>
+<span class="sd">    eta_M1_spill</span>
+<span class="sd">        Spillover efficiency at the telescope primary mirror. Units: None.</span>
+<span class="sd">    eta_M2_spill</span>
+<span class="sd">        Spillover efficiency at the telescope secondary mirror. Units: None.</span>
+<span class="sd">    eta_wo_spill</span>
+<span class="sd">        Product of all spillover losses in the warm optics in the cabin. Units: None.</span>
+<span class="sd">    n_wo_mirrors</span>
+<span class="sd">        Number of cabin optics excluding telescope M1 and M2. Units: None.</span>
+<span class="sd">    window_AR</span>
+<span class="sd">        Whether the window is supposed to be coated by Ar (True) or not (False).</span>
+<span class="sd">    eta_co</span>
+<span class="sd">        Product of following. Units: None.</span>
+<span class="sd">        (1) Cold spillover.</span>
+<span class="sd">        (2) Cold ohmic losses.</span>
+<span class="sd">        (3) Filter transmission loss.</span>
+<span class="sd">    eta_lens_antenna_rad</span>
+<span class="sd">        The loss at chip temperature, *that is not in the circuit.*</span>
+<span class="sd">        Product of the following. Units: None.</span>
+<span class="sd">        (1) Front-to-back ratio of the lens-antenna on the chip (defalut: 0.93).</span>
+<span class="sd">        (2) Reflection efficiency at the surface of the lens (default: 0.9).</span>
+<span class="sd">        (3) Matching efficiency, due to the mismatch (default: 0.98).</span>
+<span class="sd">        (4) Spillover efficiency of the lens-antenna (default: 0.993).</span>
+<span class="sd">        These values can be found in D2_2V3.pdf, p14.</span>
+<span class="sd">    eta_circuit</span>
+<span class="sd">        The loss at chip temperature, *in the circuit.*. Units: None.</span>
+<span class="sd">    eta_IBF</span>
+<span class="sd">        Fraction of the filter power transmission that is within the filter</span>
+<span class="sd">        channel bandwidth. Units: None. The rest of the power is cross talk,</span>
+<span class="sd">        picking up power that is in the bands of neighboring channels.</span>
+<span class="sd">        This efficiency applies to the coupling to astronomical line signals.</span>
+<span class="sd">        This efficiency does not apply to the coupling to continuum,</span>
+<span class="sd">        including the the coupling to the atmosphere for calculating the NEP.</span>
+<span class="sd">    KID_excess_noise_factor</span>
+<span class="sd">        Need to be documented. Units: None.</span>
+<span class="sd">    theta_maj</span>
+<span class="sd">        The HPBW along the major axis, assuming a Gaussian beam. Units: radians.</span>
+<span class="sd">    theta_min</span>
+<span class="sd">        The HPBW along the minor axis, assuming a Gaussian beam. Units: radians.</span>
+<span class="sd">    eta_mb</span>
+<span class="sd">        Main beam efficiency. Units: None. Note that eta_mb includes</span>
+<span class="sd">        the following terms from D2_2V3.pdf from Shahab&#39;s report.</span>
+<span class="sd">        because a decrease in these will launch the beam to the sky</span>
+<span class="sd">        but not couple it to the point source (See also FAQ.).</span>
+<span class="sd">        (1) eta_Phi.</span>
+<span class="sd">        (2) eta_amp.</span>
+<span class="sd">    telescope_diameter</span>
+<span class="sd">        Diameter of the telescope. Units: m.</span>
+<span class="sd">    Tb_cmb</span>
+<span class="sd">        Brightness temperature of the CMB. Units: K.</span>
+<span class="sd">    Tp_amb</span>
+<span class="sd">        Physical temperature of the atmosphere and ambient environment</span>
+<span class="sd">        around the telescope. Units: K.</span>
+<span class="sd">    Tp_cabin</span>
+<span class="sd">        Physical temperature of the telescope cabin. Units: K.</span>
+<span class="sd">    Tp_co</span>
+<span class="sd">        Physical temperature of the cold optics inside the cryostat. Units: K.</span>
+<span class="sd">    Tp_chip</span>
+<span class="sd">        Physical temperature of the chip. Units: K.</span>
+<span class="sd">    snr</span>
+<span class="sd">        Target signal to noise to be reached (for calculating the MDLF). Units: None.</span>
+<span class="sd">    obs_hours</span>
+<span class="sd">        Observing hours, including off-source time and the slew overhead</span>
+<span class="sd">        between on- and off-source. Units: hours.</span>
+<span class="sd">    on_source_fraction</span>
+<span class="sd">        Fraction of the time on source (between 0. and 1.). Units: None.</span>
+<span class="sd">    on_off</span>
+<span class="sd">        If the observation involves on_off chopping, then the SNR degrades</span>
+<span class="sd">        by sqrt(2) because the signal difference includes the noise twice.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ----------</span>
+<span class="sd">    F</span>
+<span class="sd">        Same as input.</span>
+<span class="sd">    pwv</span>
+<span class="sd">        Same as input.</span>
+<span class="sd">    EL</span>
+<span class="sd">        Same as input</span>
+<span class="sd">    eta_atm</span>
+<span class="sd">        Atmospheric transmission. Units: None.</span>
+<span class="sd">    R</span>
+<span class="sd">        Same as input.</span>
+<span class="sd">    W_F_spec</span>
+<span class="sd">        Equivalent bandwidth within the bandwidth of F/R. Units: Hz.</span>
+<span class="sd">    W_F_cont</span>
+<span class="sd">        Equivalent bandwidth of 1 channel including the power coupled</span>
+<span class="sd">        outside of the filter channel band. Units: Hz.</span>
+<span class="sd">    theta_maj</span>
+<span class="sd">        Same as input.</span>
+<span class="sd">    theta_min</span>
+<span class="sd">        Same as input.</span>
+<span class="sd">    eta_a</span>
+<span class="sd">        Aperture efficiency. Units: None.</span>
+<span class="sd">        See also: https://deshima.kibe.la/notes/324</span>
+<span class="sd">    eta_mb</span>
+<span class="sd">        Main beam efficiency. Units: None.</span>
+<span class="sd">    eta_forward</span>
+<span class="sd">        Forward efficiency. Units: None.</span>
+<span class="sd">        See also: https://deshima.kibe.la/notes/324</span>
+<span class="sd">    eta_sw</span>
+<span class="sd">        Coupling efficiency from a point source to the cryostat window. Units: None.</span>
+<span class="sd">    eta_window</span>
+<span class="sd">        Transmission of the cryostat window. Units: None.</span>
+<span class="sd">    eta_inst</span>
+<span class="sd">        Instrument optical efficiency. Units: None.</span>
+<span class="sd">        See also: https://arxiv.org/abs/1901.06934</span>
+<span class="sd">    eta_circuit</span>
+<span class="sd">        Same as input.</span>
+<span class="sd">    Tb_sky</span>
+<span class="sd">        Planck brightness temperature of the sky. Units: K.</span>
+<span class="sd">    Tb_M1</span>
+<span class="sd">        Planck brightness temperature looking into the telescope primary. Units: K.</span>
+<span class="sd">    Tb_M2</span>
+<span class="sd">        Planck brightness temperature looking into the telescope secondary,</span>
+<span class="sd">        including the spillover to the cold sky. Units: K.</span>
+<span class="sd">    Tb_wo</span>
+<span class="sd">        Planck brightness temperature looking into the warm optics. Units: K.</span>
+<span class="sd">    Tb_window</span>
+<span class="sd">        Planck brightness temperature looking into the window. Units: K.</span>
+<span class="sd">    Tb_co</span>
+<span class="sd">        Planck brightness temperature looking into the cold optis. Units: K.</span>
+<span class="sd">    Tb_KID</span>
+<span class="sd">        Planck brightness temperature looking into the filter from the KID. Units: K.</span>
+<span class="sd">    Pkid</span>
+<span class="sd">        Power absorbed by the KID. Units: W.</span>
+<span class="sd">    n_ph</span>
+<span class="sd">        Photon occupation number. Units: None.</span>
+<span class="sd">        See also: http://adsabs.harvard.edu/abs/1999ASPC..180..671R</span>
+<span class="sd">    NEPkid</span>
+<span class="sd">        Noise equivalent power at the KID with respect to the absorbed power.</span>
+<span class="sd">        Units: W Hz^0.5.</span>
+<span class="sd">    NEPinst</span>
+<span class="sd">        Instrumnet NEP. Units: W Hz^0.5.</span>
+<span class="sd">        See also: https://arxiv.org/abs/1901.06934</span>
+<span class="sd">    NEFD_line</span>
+<span class="sd">        Noise Equivalent Flux Density for couploing to a line that is not wider</span>
+<span class="sd">        than the filter bandwidth. Units: W/m^2/Hz * s^0.5.</span>
+<span class="sd">    NEFD_continuum</span>
+<span class="sd">        Noise Equivalent Flux Density for couploing to a countinuum source.</span>
+<span class="sd">        Units: W/m^2/Hz * s^0.5.</span>
+<span class="sd">    NEF</span>
+<span class="sd">        Noise Equivalent Flux. Units: W/m^2 * s^0.5.</span>
+<span class="sd">    MDLF</span>
+<span class="sd">        Minimum Detectable Line Flux. Units: W/m^2.</span>
+<span class="sd">    MS</span>
+<span class="sd">        Mapping Speed. Units: arcmin^2 mJy^-2 h^-1.</span>
+<span class="sd">    snr</span>
+<span class="sd">        Same as input.</span>
+<span class="sd">    obs_hours</span>
+<span class="sd">        Same as input.</span>
+<span class="sd">    on_source_fraction</span>
+<span class="sd">        Same as input.</span>
+<span class="sd">    on_source_hours</span>
+<span class="sd">        Observing hours on source. Units: hours.</span>
+<span class="sd">    equivalent_Trx</span>
+<span class="sd">        Equivalent receiver noise temperature. Units: K.</span>
+<span class="sd">        at the moment this assumes Rayleigh-Jeans!</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The parameters to calculate the window transmission / reflection</span>
+<span class="sd">    is hard-coded in the function window_trans().</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Equivalent Bandwidth of 1 channel.</span>
+    <span class="c1"># Used for calculating loading and coupling to a continuum source</span>
+    <span class="n">W_F_cont</span> <span class="o">=</span> <span class="n">F</span> <span class="o">/</span> <span class="n">R</span> <span class="o">/</span> <span class="n">eta_IBF</span>
+    <span class="c1"># Used for calculating coupling to a line source,</span>
+    <span class="c1"># with a linewidth not wider than the filter channel</span>
+    <span class="n">W_F_spec</span> <span class="o">=</span> <span class="n">F</span> <span class="o">/</span> <span class="n">R</span>
+
+    <span class="c1"># #############################################################</span>
+    <span class="c1"># 1. Calculating loading power absorbed by the KID, and the NEP</span>
+    <span class="c1"># #############################################################</span>
+
+    <span class="c1"># .......................................................</span>
+    <span class="c1"># Efficiencies for calculating sky coupling</span>
+    <span class="c1"># .......................................................</span>
+
+    <span class="c1"># Ohmic loss as a function of frequency, from skin effect scaling</span>
+    <span class="n">eta_Al_ohmic</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">eta_Al_ohmic_850</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">F</span> <span class="o">/</span> <span class="mf">850.0e9</span><span class="p">)</span>
+    <span class="n">eta_M1_ohmic</span> <span class="o">=</span> <span class="n">eta_Al_ohmic</span>
+    <span class="n">eta_M2_ohmic</span> <span class="o">=</span> <span class="n">eta_Al_ohmic</span>
+
+    <span class="c1"># Collect efficiencies at the same temperature</span>
+    <span class="n">eta_M1</span> <span class="o">=</span> <span class="n">eta_M1_ohmic</span> <span class="o">*</span> <span class="n">eta_M1_spill</span>
+    <span class="n">eta_wo</span> <span class="o">=</span> <span class="n">eta_Al_ohmic</span> <span class="o">**</span> <span class="n">n_wo_mirrors</span> <span class="o">*</span> <span class="n">eta_wo_spill</span>
+    <span class="n">eta_chip</span> <span class="o">=</span> <span class="n">eta_lens_antenna_rad</span> <span class="o">*</span> <span class="n">eta_circuit</span>
+
+    <span class="c1"># Forward efficiency: does/should not include window loss</span>
+    <span class="c1"># because it is defined as how much power out of</span>
+    <span class="c1"># the crystat window couples to the cold sky.</span>
+    <span class="n">eta_forward</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">eta_M1</span> <span class="o">*</span> <span class="n">eta_M2_ohmic</span> <span class="o">*</span> <span class="n">eta_M2_spill</span> <span class="o">*</span> <span class="n">eta_wo</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">eta_M2_spill</span><span class="p">)</span> <span class="o">*</span> <span class="n">eta_wo</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Calcuate eta. scalar/vector depending on F.</span>
+    <span class="n">eta_atm</span> <span class="o">=</span> <span class="n">eta_atm_func</span><span class="p">(</span><span class="n">F</span><span class="o">=</span><span class="n">F</span><span class="p">,</span> <span class="n">pwv</span><span class="o">=</span><span class="n">pwv</span><span class="p">,</span> <span class="n">EL</span><span class="o">=</span><span class="n">EL</span><span class="p">,</span> <span class="n">R</span><span class="o">=</span><span class="n">R</span><span class="p">)</span>
+
+    <span class="c1"># Johnson-Nyquist Power Spectral Density (W/Hz)</span>
+    <span class="c1"># for the physical temperatures of each stage</span>
+
+    <span class="n">psd_jn_cmb</span> <span class="o">=</span> <span class="n">johnson_nyquist_psd</span><span class="p">(</span><span class="n">F</span><span class="o">=</span><span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">Tb_cmb</span><span class="p">)</span>
+    <span class="n">psd_jn_amb</span> <span class="o">=</span> <span class="n">johnson_nyquist_psd</span><span class="p">(</span><span class="n">F</span><span class="o">=</span><span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">Tp_amb</span><span class="p">)</span>
+    <span class="n">psd_jn_cabin</span> <span class="o">=</span> <span class="n">johnson_nyquist_psd</span><span class="p">(</span><span class="n">F</span><span class="o">=</span><span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">Tp_cabin</span><span class="p">)</span>
+    <span class="n">psd_jn_co</span> <span class="o">=</span> <span class="n">johnson_nyquist_psd</span><span class="p">(</span><span class="n">F</span><span class="o">=</span><span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">Tp_co</span><span class="p">)</span>
+    <span class="n">psd_jn_chip</span> <span class="o">=</span> <span class="n">johnson_nyquist_psd</span><span class="p">(</span><span class="n">F</span><span class="o">=</span><span class="n">F</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="n">Tp_chip</span><span class="p">)</span>
+
+    <span class="c1"># Optical Chain</span>
+    <span class="c1"># Sequentially calculate the Power Spectral Density (W/Hz) at each stage.</span>
+    <span class="c1"># Uses only basic radiation transfer: rad_out = eta*rad_in + (1-eta)*medium</span>
+
+    <span class="n">psd_sky</span> <span class="o">=</span> <span class="n">rad_trans</span><span class="p">(</span><span class="n">rad_in</span><span class="o">=</span><span class="n">psd_jn_cmb</span><span class="p">,</span> <span class="n">medium</span><span class="o">=</span><span class="n">psd_jn_amb</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta_atm</span><span class="p">)</span>
+    <span class="n">psd_M1</span> <span class="o">=</span> <span class="n">rad_trans</span><span class="p">(</span><span class="n">rad_in</span><span class="o">=</span><span class="n">psd_sky</span><span class="p">,</span> <span class="n">medium</span><span class="o">=</span><span class="n">psd_jn_amb</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta_M1</span><span class="p">)</span>
+    <span class="n">psd_M2</span> <span class="o">=</span> <span class="n">rad_trans</span><span class="p">(</span><span class="n">rad_in</span><span class="o">=</span><span class="n">psd_M1</span><span class="p">,</span> <span class="n">medium</span><span class="o">=</span><span class="n">psd_jn_amb</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta_M2_ohmic</span><span class="p">)</span>
+    <span class="n">psd_M2_spill</span> <span class="o">=</span> <span class="n">rad_trans</span><span class="p">(</span><span class="n">rad_in</span><span class="o">=</span><span class="n">psd_M2</span><span class="p">,</span> <span class="n">medium</span><span class="o">=</span><span class="n">psd_sky</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta_M2_spill</span><span class="p">)</span>
+    <span class="n">psd_wo</span> <span class="o">=</span> <span class="n">rad_trans</span><span class="p">(</span><span class="n">rad_in</span><span class="o">=</span><span class="n">psd_M2_spill</span><span class="p">,</span> <span class="n">medium</span><span class="o">=</span><span class="n">psd_jn_cabin</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta_wo</span><span class="p">)</span>
+    <span class="p">[</span><span class="n">psd_window</span><span class="p">,</span> <span class="n">eta_window</span><span class="p">]</span> <span class="o">=</span> <span class="n">window_trans</span><span class="p">(</span>
+        <span class="n">F</span><span class="o">=</span><span class="n">F</span><span class="p">,</span>
+        <span class="n">psd_in</span><span class="o">=</span><span class="n">psd_wo</span><span class="p">,</span>
+        <span class="n">psd_cabin</span><span class="o">=</span><span class="n">psd_jn_cabin</span><span class="p">,</span>
+        <span class="n">psd_co</span><span class="o">=</span><span class="n">psd_jn_co</span><span class="p">,</span>
+        <span class="n">window_AR</span><span class="o">=</span><span class="n">window_AR</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">psd_co</span> <span class="o">=</span> <span class="n">rad_trans</span><span class="p">(</span><span class="n">rad_in</span><span class="o">=</span><span class="n">psd_window</span><span class="p">,</span> <span class="n">medium</span><span class="o">=</span><span class="n">psd_jn_co</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta_co</span><span class="p">)</span>
+    <span class="n">psd_KID</span> <span class="o">=</span> <span class="n">rad_trans</span><span class="p">(</span>
+        <span class="n">rad_in</span><span class="o">=</span><span class="n">psd_co</span><span class="p">,</span> <span class="n">medium</span><span class="o">=</span><span class="n">psd_jn_chip</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta_chip</span>
+    <span class="p">)</span>  <span class="c1"># PSD absorbed by KID</span>
+
+    <span class="c1"># Instrument optical efficiency as in JATIS 2019</span>
+    <span class="c1"># (eta_inst can be calculated only after calculating eta_window)</span>
+    <span class="n">eta_inst</span> <span class="o">=</span> <span class="n">eta_chip</span> <span class="o">*</span> <span class="n">eta_co</span> <span class="o">*</span> <span class="n">eta_window</span>
+
+    <span class="c1"># Calculating Sky loading, Warm loading and Cold loading individually for reference</span>
+    <span class="c1"># (Not required for calculating Pkid, but serves as a consistency check.)</span>
+    <span class="c1"># .................................................................................</span>
+
+    <span class="c1"># Sky loading</span>
+    <span class="n">psd_KID_sky_1</span> <span class="o">=</span> <span class="n">psd_sky</span> <span class="o">*</span> <span class="n">eta_M1</span> <span class="o">*</span> <span class="n">eta_M2_spill</span> <span class="o">*</span> <span class="n">eta_M2_ohmic</span> <span class="o">*</span> <span class="n">eta_wo</span> <span class="o">*</span> <span class="n">eta_inst</span>
+    <span class="n">psd_KID_sky_2</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">rad_trans</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">psd_sky</span><span class="p">,</span> <span class="n">eta_M2_spill</span><span class="p">)</span> <span class="o">*</span> <span class="n">eta_M2_ohmic</span> <span class="o">*</span> <span class="n">eta_wo</span> <span class="o">*</span> <span class="n">eta_inst</span>
+    <span class="p">)</span>
+    <span class="n">psd_KID_sky</span> <span class="o">=</span> <span class="n">psd_KID_sky_1</span> <span class="o">+</span> <span class="n">psd_KID_sky_2</span>
+
+    <span class="n">skycoup</span> <span class="o">=</span> <span class="n">psd_KID_sky</span> <span class="o">/</span> <span class="n">psd_sky</span>  <span class="c1"># To compare with Jochem</span>
+
+    <span class="c1"># Warm loading</span>
+    <span class="n">psd_KID_warm</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">window_trans</span><span class="p">(</span>
+            <span class="n">F</span><span class="o">=</span><span class="n">F</span><span class="p">,</span>
+            <span class="n">psd_in</span><span class="o">=</span><span class="n">rad_trans</span><span class="p">(</span>
+                <span class="n">rad_trans</span><span class="p">(</span>
+                    <span class="n">rad_trans</span><span class="p">(</span>
+                        <span class="n">rad_trans</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">psd_jn_amb</span><span class="p">,</span> <span class="n">eta_M1</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">eta_M2_spill</span>
+                    <span class="p">),</span>  <span class="c1"># sky spillover does not count for warm loading</span>
+                    <span class="n">psd_jn_amb</span><span class="p">,</span>
+                    <span class="n">eta_M2_ohmic</span><span class="p">,</span>
+                <span class="p">),</span>
+                <span class="n">psd_jn_cabin</span><span class="p">,</span>
+                <span class="n">eta_wo</span><span class="p">,</span>
+            <span class="p">),</span>
+            <span class="n">psd_cabin</span><span class="o">=</span><span class="n">psd_jn_cabin</span><span class="p">,</span>
+            <span class="n">psd_co</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">window_AR</span><span class="o">=</span><span class="n">window_AR</span><span class="p">,</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="o">*</span> <span class="n">eta_co</span>
+        <span class="o">*</span> <span class="n">eta_chip</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Cold loading</span>
+    <span class="n">psd_KID_cold</span> <span class="o">=</span> <span class="n">rad_trans</span><span class="p">(</span>
+        <span class="n">rad_trans</span><span class="p">(</span>
+            <span class="n">window_trans</span><span class="p">(</span>
+                <span class="n">F</span><span class="o">=</span><span class="n">F</span><span class="p">,</span> <span class="n">psd_in</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">psd_cabin</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">psd_co</span><span class="o">=</span><span class="n">psd_jn_co</span><span class="p">,</span> <span class="n">window_AR</span><span class="o">=</span><span class="n">window_AR</span>
+            <span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">psd_jn_co</span><span class="p">,</span>
+            <span class="n">eta_co</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">psd_jn_chip</span><span class="p">,</span>
+        <span class="n">eta_chip</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Loadig power absorbed by the KID</span>
+    <span class="c1"># .............................................</span>
+
+    <span class="n">Pkid</span> <span class="o">=</span> <span class="n">psd_KID</span> <span class="o">*</span> <span class="n">W_F_cont</span>
+    <span class="n">Pkid_sky</span> <span class="o">=</span> <span class="n">psd_KID_sky</span> <span class="o">*</span> <span class="n">W_F_cont</span>
+    <span class="n">Pkid_warm</span> <span class="o">=</span> <span class="n">psd_KID_warm</span> <span class="o">*</span> <span class="n">W_F_cont</span>
+    <span class="n">Pkid_cold</span> <span class="o">=</span> <span class="n">psd_KID_cold</span> <span class="o">*</span> <span class="n">W_F_cont</span>
+
+    <span class="c1"># if np.all(Pkid != Pkid_sky + Pkid_warm + Pkid_cold):</span>
+    <span class="c1">#     print(&quot;WARNING: Pkid != Pkid_sky + Pkid_warm + Pkid_cold&quot;)</span>
+
+    <span class="c1"># Photon + R(ecombination) NEP of the KID</span>
+    <span class="c1"># .............................................</span>
+
+    <span class="n">NEPkid</span> <span class="o">=</span> <span class="n">photon_NEP_kid</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">Pkid</span><span class="p">,</span> <span class="n">W_F_cont</span><span class="p">)</span> <span class="o">*</span> <span class="n">KID_excess_noise_factor</span>
+
+    <span class="c1"># Instrument NEP as in JATIS 2019</span>
+    <span class="c1"># .............................................</span>
+
+    <span class="n">NEPinst</span> <span class="o">=</span> <span class="n">NEPkid</span> <span class="o">/</span> <span class="n">eta_inst</span>  <span class="c1"># Instrument NEP</span>
+
+    <span class="c1"># ##############################################################</span>
+    <span class="c1"># 2. Calculating source coupling and sensitivtiy (MDLF and NEFD)</span>
+    <span class="c1"># ##############################################################</span>
+
+    <span class="c1"># Efficiencies</span>
+    <span class="c1"># .........................................................</span>
+
+    <span class="n">Ag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">telescope_diameter</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span>  <span class="c1"># Geometric area of the telescope</span>
+    <span class="n">omega_mb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">theta_maj</span> <span class="o">*</span> <span class="n">theta_min</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">4</span>  <span class="c1"># Main beam solid angle</span>
+    <span class="n">omega_a</span> <span class="o">=</span> <span class="n">omega_mb</span> <span class="o">/</span> <span class="n">eta_mb</span>  <span class="c1"># beam solid angle</span>
+    <span class="n">Ae</span> <span class="o">=</span> <span class="p">(</span><span class="n">c</span> <span class="o">/</span> <span class="n">F</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">omega_a</span>  <span class="c1"># Effective Aperture (m^2): lambda^2 / omega_a</span>
+    <span class="n">eta_a</span> <span class="o">=</span> <span class="n">Ae</span> <span class="o">/</span> <span class="n">Ag</span>  <span class="c1"># Aperture efficiency</span>
+
+    <span class="c1"># Coupling from the &quot;S&quot;ource to outside of &quot;W&quot;indow</span>
+    <span class="n">eta_pol</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># Instrument is single polarization</span>
+    <span class="n">eta_sw</span> <span class="o">=</span> <span class="n">eta_pol</span> <span class="o">*</span> <span class="n">eta_atm</span> <span class="o">*</span> <span class="n">eta_a</span> <span class="o">*</span> <span class="n">eta_forward</span>  <span class="c1"># Source-Window coupling</span>
+
+    <span class="c1"># NESP: Noise Equivalent Source Power (an intermediate quantitiy)</span>
+    <span class="c1"># .........................................................</span>
+
+    <span class="n">NESP</span> <span class="o">=</span> <span class="n">NEPinst</span> <span class="o">/</span> <span class="n">eta_sw</span>  <span class="c1"># Noise equivalnet source power</span>
+
+    <span class="c1"># NEF: Noise Equivalent Flux (an intermediate quantitiy)</span>
+    <span class="c1"># .........................................................</span>
+
+    <span class="c1"># From this point, units change from Hz^-0.5 to t^0.5</span>
+    <span class="c1"># sqrt(2) is because NEP is defined for 0.5 s integration.</span>
+
+    <span class="n">NEF</span> <span class="o">=</span> <span class="n">NESP</span> <span class="o">/</span> <span class="n">Ag</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Noise equivalent flux</span>
+
+    <span class="c1"># If the observation is involves ON-OFF sky subtraction,</span>
+    <span class="c1"># Subtraction of two noisy sources results in sqrt(2) increase in noise.</span>
+
+    <span class="k">if</span> <span class="n">on_off</span><span class="p">:</span>
+        <span class="n">NEF</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">NEF</span>
+
+    <span class="c1"># MDLF (Minimum Detectable Line Flux)</span>
+    <span class="c1"># .........................................................</span>
+
+    <span class="c1"># Note that eta_IBF does not matter for MDLF because it is flux.</span>
+
+    <span class="n">MDLF</span> <span class="o">=</span> <span class="n">NEF</span> <span class="o">*</span> <span class="n">snr</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">obs_hours</span> <span class="o">*</span> <span class="n">on_source_fraction</span> <span class="o">*</span> <span class="mf">60.0</span> <span class="o">*</span> <span class="mf">60.0</span><span class="p">)</span>
+
+    <span class="c1"># NEFD (Noise Equivalent Flux Density)</span>
+    <span class="c1"># .........................................................</span>
+
+    <span class="n">spectral_NEFD</span> <span class="o">=</span> <span class="n">NEF</span> <span class="o">/</span> <span class="n">W_F_spec</span>
+    <span class="n">continuum_NEFD</span> <span class="o">=</span> <span class="n">NEF</span> <span class="o">/</span> <span class="n">W_F_cont</span>  <span class="c1"># = spectral_NEFD * eta_IBF &lt; spectral_NEFD</span>
+
+    <span class="c1"># Mapping Speed (line, 1 channel) (arcmin^2 mJy^-2 h^-1)</span>
+    <span class="c1"># .........................................................</span>
+
+    <span class="n">MS</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="mf">60.0</span>
+        <span class="o">*</span> <span class="mf">60.0</span>
+        <span class="o">*</span> <span class="mf">1.0</span>
+        <span class="o">*</span> <span class="n">omega_mb</span>
+        <span class="o">*</span> <span class="p">(</span><span class="mf">180.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">60.0</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span>
+        <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">spectral_NEFD</span> <span class="o">*</span> <span class="mf">1e29</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Equivalent Trx</span>
+    <span class="c1"># .........................................................</span>
+
+    <span class="n">Trx</span> <span class="o">=</span> <span class="n">NEPinst</span> <span class="o">/</span> <span class="n">k</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">W_F_cont</span><span class="p">)</span> <span class="o">-</span> <span class="n">T_from_psd</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">psd_wo</span><span class="p">)</span>  <span class="c1"># assumes RJ!</span>
+
+    <span class="c1"># ############################################</span>
+    <span class="c1"># 3. Output results as Pandas DataFrame</span>
+    <span class="c1"># ############################################</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;F&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">pwv</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;PWV&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">EL</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;EL&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">eta_atm</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;eta_atm&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">R</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;R&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">W_F_spec</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;W_F_spec&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">W_F_cont</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;W_F_cont&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">theta_maj</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;theta_maj&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">theta_min</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;theta_min&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">eta_a</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;eta_a&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">eta_mb</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;eta_mb&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">eta_forward</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;eta_forward&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">eta_sw</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;eta_sw&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">eta_window</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;eta_window&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">eta_inst</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;eta_inst&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">eta_circuit</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;eta_circuit&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">T_from_psd</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">psd_sky</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Tb_sky&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">T_from_psd</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">psd_M1</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Tb_M1&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">T_from_psd</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">psd_M2</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Tb_M2&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">T_from_psd</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">psd_wo</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Tb_wo&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">T_from_psd</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">psd_window</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Tb_window&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">T_from_psd</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">psd_co</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Tb_co&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">T_from_psd</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">psd_KID</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Tb_KID&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">psd_KID</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;psd_KID&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">Pkid</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Pkid&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">Pkid_sky</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Pkid_sky&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">Pkid_warm</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Pkid_warm&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">Pkid_cold</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Pkid_cold&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">Pkid</span> <span class="o">/</span> <span class="p">(</span><span class="n">W_F_cont</span> <span class="o">*</span> <span class="n">h</span> <span class="o">*</span> <span class="n">F</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;n_ph&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">NEPkid</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;NEPkid&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">NEPinst</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;NEPinst&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">spectral_NEFD</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;NEFD_line&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">continuum_NEFD</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;NEFD_continuum&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">NEF</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;NEF&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">MDLF</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;MDLF&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">MS</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;MS&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">snr</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;snr&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">obs_hours</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;obs_hours&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">on_source_fraction</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;on_source_fraction&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">obs_hours</span> <span class="o">*</span> <span class="n">on_source_fraction</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;on_source_hours&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">Trx</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;equivalent_Trx&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">skycoup</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;skycoup&quot;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">eta_Al_ohmic</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;eta_Al_ohmic&quot;</span><span class="p">),</span>
+            <span class="c1"># pd.Series(Pkid_warm_jochem, name=&#39;Pkid_warm_jochem&#39;)</span>
+        <span class="p">],</span>
+        <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Turn Scalar values into vectors</span>
+    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;ffill&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+
+    
+  <script src="../../_static/js/index.30270b6e4c972e43c488.js"></script>
+
+
+    <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    <p>
+          &copy; Copyright 2018-2020 DESHIMA software team.<br/>
+        Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

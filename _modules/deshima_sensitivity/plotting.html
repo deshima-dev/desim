@@ -1,0 +1,423 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>deshima_sensitivity.plotting &#8212; deshima-sensitivity 0.2.6 documentation</title>
+    
+  <link rel="stylesheet" href="../../_static/css/index.d431a4ee1c1efae0e38bdfebc22debff.css">
+
+    
+  <link rel="stylesheet"
+    href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+  <link rel="stylesheet"
+    href="../../_static/vendor/open-sans_all/1.44.1/index.css">
+  <link rel="stylesheet"
+    href="../../_static/vendor/lato_latin-ext/1.44.1/index.css">
+
+    
+    <link rel="stylesheet" href="../../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="../../_static/js/index.30270b6e4c972e43c488.js">
+
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <nav class="navbar navbar-light navbar-expand-lg bg-light fixed-top bd-navbar" id="navbar-main">
+<div class="container-xl">
+
+    
+    <a class="navbar-brand" href="../../index.html">
+      <img src="../../_static/logo.png" class="logo" alt="logo">
+    </a>
+    
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div id="navbar-menu" class="col-lg-9 collapse navbar-collapse">
+      <ul id="navbar-main-elements" class="navbar-nav mr-auto">
+        
+        
+        <li class="nav-item ">
+            <a class="nav-link" href="../../index.html">Home</a>
+        </li>
+        
+        <li class="nav-item ">
+            <a class="nav-link" href="../../_apidoc/deshima_sensitivity.html">Package guide</a>
+        </li>
+        
+        
+      </ul>
+
+
+      
+
+      <ul class="navbar-nav">
+        
+          <li class="nav-item">
+            <a class="nav-link" href="https://github.com/deshima-dev/deshima-sensitivity/" target="_blank" rel="noopener">
+              <span><i class="fab fa-github-square"></i></span>
+            </a>
+          </li>
+        
+        
+      </ul>
+    </div>
+</div>
+    </nav>
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+          <div class="col-12 col-md-3 bd-sidebar">
+
+<form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+
+
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+
+  <div class="bd-toc-item active">
+  
+
+  <ul class="nav bd-sidenav">
+      
+      
+      
+      
+      
+    </ul>
+
+</nav>
+          </div>
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+              
+
+<nav id="bd-toc-nav">
+    <ul class="nav section-nav flex-column">
+    
+    </ul>
+</nav>
+
+
+              
+          </div>
+          
+
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for deshima_sensitivity.plotting</h1><div class="highlight"><pre>
+<span></span><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;MDLF_simple&quot;</span><span class="p">,</span> <span class="s2">&quot;MS_simple&quot;</span><span class="p">,</span> <span class="s2">&quot;PlotD2HPBW&quot;</span><span class="p">]</span>
+
+
+<span class="c1"># standard library</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+
+
+<span class="c1"># dependent packages</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">jupyter_io</span> <span class="kn">import</span> <span class="n">savetable_in_notebook</span>
+<span class="kn">from</span> <span class="nn">jupyter_io.output</span> <span class="kn">import</span> <span class="n">HTML</span>
+<span class="kn">from</span> <span class="nn">.instruments</span> <span class="kn">import</span> <span class="n">D2HPBW</span><span class="p">,</span> <span class="n">eta_mb_ruze</span>
+<span class="kn">from</span> <span class="nn">.simulator</span> <span class="kn">import</span> <span class="n">spectrometer_sensitivity</span>
+
+
+<span class="c1"># type aliases</span>
+<span class="n">ArrayLike</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+
+
+<span class="c1"># main functions</span>
+<div class="viewcode-block" id="MDLF_simple"><a class="viewcode-back" href="../../_apidoc/deshima_sensitivity.plotting.html#deshima_sensitivity.plotting.MDLF_simple">[docs]</a><span class="k">def</span> <span class="nf">MDLF_simple</span><span class="p">(</span>
+    <span class="n">F</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span>
+    <span class="n">pwv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">EL</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">,</span>
+    <span class="n">snr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">,</span>
+    <span class="n">obs_hours</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">8.0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HTML</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plot minimum detectable line flux (MDLF) of DESHIMA 2.0 on ASTE.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    F</span>
+<span class="sd">        Frequency. Units: GHz.</span>
+<span class="sd">    pwv</span>
+<span class="sd">        Precipitable water vapor. Units: mm.</span>
+<span class="sd">    EL</span>
+<span class="sd">        Elevation angle. Units: degrees.</span>
+<span class="sd">    snr</span>
+<span class="sd">        Target S/N of the detection.</span>
+<span class="sd">    obs_hours</span>
+<span class="sd">        Total hours of observation including ON-OFF and calibration overhead.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    html</span>
+<span class="sd">        HTML object for download link (to be used in Jupyter notebook).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Main beam efficiency of ASTE (0.9 is from EM, ruze is from ASTE)</span>
+    <span class="n">eta_mb</span> <span class="o">=</span> <span class="n">eta_mb_ruze</span><span class="p">(</span><span class="n">F</span><span class="o">=</span><span class="n">F</span><span class="p">,</span> <span class="n">LFlimit</span><span class="o">=</span><span class="mf">0.805</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">37e-6</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.9</span>
+
+    <span class="n">D2goal_input</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;F&quot;</span><span class="p">:</span> <span class="n">F</span><span class="p">,</span>
+        <span class="s2">&quot;pwv&quot;</span><span class="p">:</span> <span class="n">pwv</span><span class="p">,</span>
+        <span class="s2">&quot;EL&quot;</span><span class="p">:</span> <span class="n">EL</span><span class="p">,</span>
+        <span class="s2">&quot;snr&quot;</span><span class="p">:</span> <span class="n">snr</span><span class="p">,</span>
+        <span class="s2">&quot;obs_hours&quot;</span><span class="p">:</span> <span class="n">obs_hours</span><span class="p">,</span>
+        <span class="s2">&quot;eta_mb&quot;</span><span class="p">:</span> <span class="n">eta_mb</span><span class="p">,</span>
+        <span class="s2">&quot;theta_maj&quot;</span><span class="p">:</span> <span class="n">D2HPBW</span><span class="p">(</span><span class="n">F</span><span class="p">),</span>  <span class="c1"># Half power beam width (major axis)</span>
+        <span class="s2">&quot;theta_min&quot;</span><span class="p">:</span> <span class="n">D2HPBW</span><span class="p">(</span><span class="n">F</span><span class="p">),</span>  <span class="c1"># Half power beam width (minor axis)</span>
+        <span class="s2">&quot;on_source_fraction&quot;</span><span class="p">:</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="mf">0.9</span><span class="p">,</span>  <span class="c1"># ON-OFF 40%, calibration overhead of 10%</span>
+    <span class="p">}</span>
+
+    <span class="n">D2goal</span> <span class="o">=</span> <span class="n">spectrometer_sensitivity</span><span class="p">(</span><span class="o">**</span><span class="n">D2goal_input</span><span class="p">)</span>
+
+    <span class="n">D2baseline_input</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;F&quot;</span><span class="p">:</span> <span class="n">F</span><span class="p">,</span>
+        <span class="s2">&quot;pwv&quot;</span><span class="p">:</span> <span class="n">pwv</span><span class="p">,</span>
+        <span class="s2">&quot;EL&quot;</span><span class="p">:</span> <span class="n">EL</span><span class="p">,</span>
+        <span class="s2">&quot;snr&quot;</span><span class="p">:</span> <span class="n">snr</span><span class="p">,</span>
+        <span class="s2">&quot;obs_hours&quot;</span><span class="p">:</span> <span class="n">obs_hours</span><span class="p">,</span>
+        <span class="s2">&quot;eta_mb&quot;</span><span class="p">:</span> <span class="n">eta_mb</span><span class="p">,</span>
+        <span class="s2">&quot;theta_maj&quot;</span><span class="p">:</span> <span class="n">D2HPBW</span><span class="p">(</span><span class="n">F</span><span class="p">),</span>  <span class="c1"># Half power beam width (major axis)</span>
+        <span class="s2">&quot;theta_min&quot;</span><span class="p">:</span> <span class="n">D2HPBW</span><span class="p">(</span><span class="n">F</span><span class="p">),</span>  <span class="c1"># Half power beam width (minor axis)</span>
+        <span class="s2">&quot;on_source_fraction&quot;</span><span class="p">:</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="mf">0.8</span><span class="p">,</span>  <span class="c1"># Goal 0.4*0.9</span>
+        <span class="s2">&quot;eta_circuit&quot;</span><span class="p">:</span> <span class="mf">0.32</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># eta_inst Goal 16%, Baseline 8%</span>
+        <span class="s2">&quot;eta_IBF&quot;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>  <span class="c1"># Goal 0.6</span>
+        <span class="s2">&quot;KID_excess_noise_factor&quot;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>  <span class="c1"># Goal 1.1</span>
+    <span class="p">}</span>
+
+    <span class="n">D2baseline</span> <span class="o">=</span> <span class="n">spectrometer_sensitivity</span><span class="p">(</span><span class="o">**</span><span class="n">D2baseline_input</span><span class="p">)</span>
+
+    <span class="c1"># Plotting</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">D2baseline</span><span class="p">[</span><span class="s2">&quot;F&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span>
+        <span class="n">D2baseline</span><span class="p">[</span><span class="s2">&quot;MDLF&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;--&quot;</span><span class="p">,</span>
+        <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Baseline&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">D2goal</span><span class="p">[</span><span class="s2">&quot;F&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span> <span class="n">D2goal</span><span class="p">[</span><span class="s2">&quot;MDLF&quot;</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Goal&quot;</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span>
+        <span class="n">D2baseline</span><span class="p">[</span><span class="s2">&quot;F&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span> <span class="n">D2baseline</span><span class="p">[</span><span class="s2">&quot;MDLF&quot;</span><span class="p">],</span> <span class="n">D2goal</span><span class="p">[</span><span class="s2">&quot;MDLF&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span>
+    <span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Frequency (GHz)&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Minimum Detectable Line Flux ($\mathrm{W\, m^{-2}}$)&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">460</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">10</span> <span class="o">**</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span> <span class="o">**</span> <span class="o">-</span><span class="mi">17</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s2">&quot;in&quot;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;R = </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">D2goal</span><span class="p">[</span><span class="s1">&#39;R&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="si">}</span><span class="s2">, &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;snr = </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">D2goal</span><span class="p">[</span><span class="s1">&#39;snr&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="si">}</span><span class="s2">, &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;t_obs = </span><span class="si">{</span><span class="n">D2goal</span><span class="p">[</span><span class="s1">&#39;obs_hours&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> h (incl. overhead), &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;PWV = </span><span class="si">{</span><span class="n">D2goal</span><span class="p">[</span><span class="s1">&#39;PWV&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> mm, &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;EL = </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">D2goal</span><span class="p">[</span><span class="s1">&#39;EL&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="si">}</span><span class="s2"> deg&quot;</span><span class="p">,</span>
+        <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="c1"># Create download link</span>
+    <span class="n">df_download</span> <span class="o">=</span> <span class="n">D2goal</span><span class="p">[[</span><span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="s2">&quot;MDLF&quot;</span><span class="p">]]</span>
+    <span class="n">df_download</span> <span class="o">=</span> <span class="n">df_download</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;MDLF&quot;</span><span class="p">:</span> <span class="s2">&quot;MDLF (goal)&quot;</span><span class="p">})</span>
+    <span class="n">df_download</span> <span class="o">=</span> <span class="n">df_download</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">D2baseline</span><span class="p">[[</span><span class="s2">&quot;MDLF&quot;</span><span class="p">]])</span>
+    <span class="n">df_download</span> <span class="o">=</span> <span class="n">df_download</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;MDLF&quot;</span><span class="p">:</span> <span class="s2">&quot;MDLF (baseline)&quot;</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">savetable_in_notebook</span><span class="p">(</span><span class="n">df_download</span><span class="p">,</span> <span class="s2">&quot;MDLF.csv&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MS_simple"><a class="viewcode-back" href="../../_apidoc/deshima_sensitivity.plotting.html#deshima_sensitivity.plotting.MS_simple">[docs]</a><span class="k">def</span> <span class="nf">MS_simple</span><span class="p">(</span><span class="n">F</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">pwv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">EL</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">60.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HTML</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plot mapping speed of DESHIMA 2.0 on ASTE.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    F</span>
+<span class="sd">        Frequency. Units: GHz.</span>
+<span class="sd">    pwv</span>
+<span class="sd">        Precipitable water vapor. Units: mm.</span>
+<span class="sd">    EL</span>
+<span class="sd">        Elevation angle. Units: degrees.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    html</span>
+<span class="sd">        HTML object for download link (to be used in Jupyter notebook).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Main beam efficiency of ASTE (0.9 is from EM, ruze is from ASTE)</span>
+    <span class="n">eta_mb</span> <span class="o">=</span> <span class="n">eta_mb_ruze</span><span class="p">(</span><span class="n">F</span><span class="o">=</span><span class="n">F</span><span class="p">,</span> <span class="n">LFlimit</span><span class="o">=</span><span class="mf">0.805</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">37e-6</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.9</span>
+
+    <span class="n">D2goal_input</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;F&quot;</span><span class="p">:</span> <span class="n">F</span><span class="p">,</span>
+        <span class="s2">&quot;pwv&quot;</span><span class="p">:</span> <span class="n">pwv</span><span class="p">,</span>
+        <span class="s2">&quot;EL&quot;</span><span class="p">:</span> <span class="n">EL</span><span class="p">,</span>
+        <span class="s2">&quot;eta_mb&quot;</span><span class="p">:</span> <span class="n">eta_mb</span><span class="p">,</span>
+        <span class="s2">&quot;on_off&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;theta_maj&quot;</span><span class="p">:</span> <span class="n">D2HPBW</span><span class="p">(</span><span class="n">F</span><span class="p">),</span>  <span class="c1"># Half power beam width (major axis)</span>
+        <span class="s2">&quot;theta_min&quot;</span><span class="p">:</span> <span class="n">D2HPBW</span><span class="p">(</span><span class="n">F</span><span class="p">),</span>  <span class="c1"># Half power beam width (minor axis)</span>
+    <span class="p">}</span>
+
+    <span class="n">D2goal</span> <span class="o">=</span> <span class="n">spectrometer_sensitivity</span><span class="p">(</span><span class="o">**</span><span class="n">D2goal_input</span><span class="p">)</span>
+
+    <span class="n">D2baseline_input</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;F&quot;</span><span class="p">:</span> <span class="n">F</span><span class="p">,</span>
+        <span class="s2">&quot;pwv&quot;</span><span class="p">:</span> <span class="n">pwv</span><span class="p">,</span>
+        <span class="s2">&quot;EL&quot;</span><span class="p">:</span> <span class="n">EL</span><span class="p">,</span>
+        <span class="s2">&quot;eta_mb&quot;</span><span class="p">:</span> <span class="n">eta_mb</span><span class="p">,</span>
+        <span class="s2">&quot;on_off&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;theta_maj&quot;</span><span class="p">:</span> <span class="n">D2HPBW</span><span class="p">(</span><span class="n">F</span><span class="p">),</span>  <span class="c1"># Half power beam width (major axis)</span>
+        <span class="s2">&quot;theta_min&quot;</span><span class="p">:</span> <span class="n">D2HPBW</span><span class="p">(</span><span class="n">F</span><span class="p">),</span>  <span class="c1"># Half power beam width (minor axis)</span>
+        <span class="s2">&quot;eta_circuit&quot;</span><span class="p">:</span> <span class="mf">0.32</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">,</span>  <span class="c1"># eta_inst Goal 16%, Baseline 8%</span>
+        <span class="s2">&quot;eta_IBF&quot;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>  <span class="c1"># Goal 0.6</span>
+        <span class="s2">&quot;KID_excess_noise_factor&quot;</span><span class="p">:</span> <span class="mf">1.2</span><span class="p">,</span>  <span class="c1"># Goal 1.1</span>
+    <span class="p">}</span>
+
+    <span class="n">D2baseline</span> <span class="o">=</span> <span class="n">spectrometer_sensitivity</span><span class="p">(</span><span class="o">**</span><span class="n">D2baseline_input</span><span class="p">)</span>
+
+    <span class="c1"># Plotting</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">D2baseline</span><span class="p">[</span><span class="s2">&quot;F&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span>
+        <span class="n">D2baseline</span><span class="p">[</span><span class="s2">&quot;MS&quot;</span><span class="p">],</span>
+        <span class="s2">&quot;--&quot;</span><span class="p">,</span>
+        <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Baseline&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">D2goal</span><span class="p">[</span><span class="s2">&quot;F&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span> <span class="n">D2goal</span><span class="p">[</span><span class="s2">&quot;MS&quot;</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Goal&quot;</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span>
+        <span class="n">D2baseline</span><span class="p">[</span><span class="s2">&quot;F&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span> <span class="n">D2baseline</span><span class="p">[</span><span class="s2">&quot;MS&quot;</span><span class="p">],</span> <span class="n">D2goal</span><span class="p">[</span><span class="s2">&quot;MS&quot;</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span>
+    <span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Frequency (GHz)&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Mapping Speed ($\mathrm{arcmin^2\, mJy^{-2}\, h^{-1}}$)&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">460</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">10</span> <span class="o">**</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span> <span class="o">**</span> <span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s2">&quot;in&quot;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;R = </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">D2goal</span><span class="p">[</span><span class="s1">&#39;R&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="si">}</span><span class="s2">, &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;PWV = </span><span class="si">{</span><span class="n">D2goal</span><span class="p">[</span><span class="s1">&#39;PWV&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> mm, &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;EL = </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">D2goal</span><span class="p">[</span><span class="s1">&#39;EL&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="si">}</span><span class="s2"> deg&quot;</span><span class="p">,</span>
+        <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="c1"># Create download link</span>
+    <span class="n">df_download</span> <span class="o">=</span> <span class="n">D2goal</span><span class="p">[[</span><span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="s2">&quot;MS&quot;</span><span class="p">]]</span>
+    <span class="n">df_download</span> <span class="o">=</span> <span class="n">df_download</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;MS&quot;</span><span class="p">:</span> <span class="s2">&quot;MS (goal)&quot;</span><span class="p">})</span>
+    <span class="n">df_download</span> <span class="o">=</span> <span class="n">df_download</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">D2baseline</span><span class="p">[[</span><span class="s2">&quot;MS&quot;</span><span class="p">]])</span>
+    <span class="n">df_download</span> <span class="o">=</span> <span class="n">df_download</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;MS&quot;</span><span class="p">:</span> <span class="s2">&quot;MS (baseline)&quot;</span><span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">savetable_in_notebook</span><span class="p">(</span><span class="n">df_download</span><span class="p">,</span> <span class="s2">&quot;MS.csv&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PlotD2HPBW"><a class="viewcode-back" href="../../_apidoc/deshima_sensitivity.plotting.html#deshima_sensitivity.plotting.PlotD2HPBW">[docs]</a><span class="k">def</span> <span class="nf">PlotD2HPBW</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">HTML</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Plot half power beam width of DESHIMA 2.0 on ASTE.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    html</span>
+<span class="sd">        HTML object for download link (to be used in Jupyter notebook).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">220</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">440</span><span class="p">),</span> <span class="mi">349</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e9</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+        <span class="n">F</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span>
+        <span class="n">D2HPBW</span><span class="p">(</span><span class="n">F</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
+        <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">color</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="s2">&quot;HPBW&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Frequency (GHz)&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;HPBW (arcsec)&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">&quot;linear&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">460</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">direction</span><span class="o">=</span><span class="s2">&quot;in&quot;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+    <span class="c1"># Create download link</span>
+    <span class="n">df_download</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">F</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;F&quot;</span><span class="p">])</span>
+    <span class="n">df_download</span><span class="p">[</span><span class="s2">&quot;HPBW&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">D2HPBW</span><span class="p">(</span><span class="n">F</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+    <span class="k">return</span> <span class="n">savetable_in_notebook</span><span class="p">(</span><span class="n">df_download</span><span class="p">,</span> <span class="s2">&quot;HPBW.csv&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+              </div>
+              
+              
+              <div class='prev-next-bottom'>
+                
+
+              </div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+
+    
+  <script src="../../_static/js/index.30270b6e4c972e43c488.js"></script>
+
+
+    <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    <p>
+          &copy; Copyright 2018-2020 DESHIMA software team.<br/>
+        Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
